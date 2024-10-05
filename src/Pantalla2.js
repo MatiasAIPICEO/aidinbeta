@@ -1,16 +1,17 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Importamos useNavigate para la navegación entre pantallas
+import { useNavigate } from 'react-router-dom';
+import { saveAs } from 'file-saver'; // Importamos saveAs correctamente
 
-const Pantalla2 = () => {
-  const navigate = useNavigate(); // Usamos useNavigate para cambiar entre pantallas
-  const [nombreCurso, setNombreCurso] = useState('');
-  const [descripcionCurso, setDescripcionCurso] = useState('');
+const Pantalla2 = ({ nombreCursoProp }) => {
+  const navigate = useNavigate();
+  const [nombreCurso, setNombreCurso] = useState(nombreCursoProp); // Nombre del curso viene desde la pantalla 1
+  const [descripcionCurso, setDescripcionCurso] = useState('Descripción del curso generada automáticamente desde la pantalla 1');
   const [publicoObjetivo, setPublicoObjetivo] = useState('');
   const [duracionSemanas, setDuracionSemanas] = useState('');
-  const [objetivoGeneral, setObjetivoGeneral] = useState('');
-  const [objetivosEspecificos, setObjetivosEspecificos] = useState('');
-  const [objetivosAprendizaje, setObjetivosAprendizaje] = useState('');
-  const [tipoEvaluacion, setTipoEvaluacion] = useState('');
+  const [objetivoGeneral, setObjetivoGeneral] = useState('Objetivo general generado por IA');
+  const [objetivosEspecificos, setObjetivosEspecificos] = useState('Objetivos específicos generados por IA');
+  const [objetivosAprendizaje, setObjetivosAprendizaje] = useState('Objetivos de aprendizaje generados por IA');
+  const [tipoEvaluacion, setTipoEvaluacion] = useState([]);
   const [requisitosPrevios, setRequisitosPrevios] = useState('');
   const [enfoquePedagogico, setEnfoquePedagogico] = useState('');
   const [actividadesAprendizaje, setActividadesAprendizaje] = useState('');
@@ -20,8 +21,25 @@ const Pantalla2 = () => {
   const [accesibilidad, setAccesibilidad] = useState('');
   const [cronograma, setCronograma] = useState('');
 
+  // Función para manejar la descarga del archivo Word
   const handleDownload = () => {
-    // Implementación del botón de descarga
+    const content = `
+      Nombre del curso/taller: ${nombreCurso}
+      Descripción: ${descripcionCurso}
+      Objetivo General: ${objetivoGeneral}
+      Objetivos Específicos: ${objetivosEspecificos}
+      Objetivos de Aprendizaje: ${objetivosAprendizaje}
+    `;
+    const blob = new Blob([content], { type: 'application/msword;charset=utf-8;' });
+    saveAs(blob, 'curso.doc');
+  };
+
+  // Función para permitir seleccionar múltiples tipos de evaluación
+  const handleTipoEvaluacionChange = (e) => {
+    const { value } = e.target;
+    setTipoEvaluacion((prev) =>
+      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
+    );
   };
 
   const handleAnterior = () => {
@@ -37,10 +55,10 @@ const Pantalla2 = () => {
       <h2>Información del curso</h2>
 
       <label className="input-label">Nombre del curso/taller:</label>
-      <input className="input-field" type="text" value={nombreCurso} onChange={(e) => setNombreCurso(e.target.value)} />
+      <input className="input-field" type="text" value={nombreCurso} readOnly /> {/* El nombre del curso viene de la pantalla 1 y es de solo lectura */}
 
       <label className="input-label">Descripción del curso/taller:</label>
-      <textarea className="input-field" value={descripcionCurso} onChange={(e) => setDescripcionCurso(e.target.value)} />
+      <textarea className="input-field" value={descripcionCurso} onChange={(e) => setDescripcionCurso(e.target.value)} readOnly />
 
       <label className="input-label">Público objetivo:</label>
       <select className="input-field" value={publicoObjetivo} onChange={(e) => setPublicoObjetivo(e.target.value)}>
@@ -56,23 +74,25 @@ const Pantalla2 = () => {
       <input className="input-field" type="number" value={duracionSemanas} onChange={(e) => setDuracionSemanas(e.target.value)} />
 
       <label className="input-label">Objetivo General del curso/taller:</label>
-      <textarea className="input-field" value={objetivoGeneral} onChange={(e) => setObjetivoGeneral(e.target.value)} />
+      <textarea className="input-field" value={objetivoGeneral} readOnly />
 
       <label className="input-label">Objetivos específicos del curso/taller:</label>
-      <textarea className="input-field" value={objetivosEspecificos} onChange={(e) => setObjetivosEspecificos(e.target.value)} />
+      <textarea className="input-field" value={objetivosEspecificos} readOnly />
 
       <label className="input-label">Objetivos de aprendizaje del curso/taller:</label>
-      <textarea className="input-field" value={objetivosAprendizaje} onChange={(e) => setObjetivosAprendizaje(e.target.value)} />
+      <textarea className="input-field" value={objetivosAprendizaje} readOnly />
 
       <label className="input-label">Tipo de evaluación del curso/taller:</label>
-      <select className="input-field" value={tipoEvaluacion} onChange={(e) => setTipoEvaluacion(e.target.value)}>
-        <option value="">Selecciona</option>
-        <option value="Examen final">Examen final</option>
+      <select className="input-field" value={tipoEvaluacion} onChange={handleTipoEvaluacionChange} multiple>
+        <option value="Cuestionario">Cuestionario</option>
+        <option value="Foro">Foro</option>
+        <option value="Trabajo individual">Trabajo individual</option>
         <option value="Trabajo en equipo">Trabajo en equipo</option>
-        <option value="Evaluación continua">Evaluación continua</option>
+        <option value="Presentación">Presentación</option>
+        <option value="Informe">Informe</option>
+        <option value="Otro">Otro</option>
       </select>
 
-      {/* Nuevos elementos agregados */}
       <label className="input-label">Requisitos previos del curso/taller:</label>
       <select className="input-field" value={requisitosPrevios} onChange={(e) => setRequisitosPrevios(e.target.value)}>
         <option value="">Selecciona</option>
@@ -209,13 +229,15 @@ const Pantalla2 = () => {
 
       {/* Botón de descarga centrado al final */}
       <div style={{ textAlign: 'center', marginTop: '20px' }}>
-        <button className="download-button" onClick={handleDownload}>Descargar Word</button>
+        <button className="download-button" onClick={handleDownload} style={{ backgroundColor: '#1E90FF', color: '#fff', borderRadius: '5px', padding: '10px 20px' }}>
+          Descargar Word
+        </button>
       </div>
 
-      {/* Botones "Anterior" y "Siguiente" */}
+      {/* Botones "Volver" y "Siguiente" alineados con el botón de Word */}
       <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '20px' }}>
-        <button onClick={handleAnterior}>Anterior</button>
-        <button onClick={handleSiguiente}>Siguiente</button>
+        <button onClick={handleAnterior} style={{ backgroundColor: '#1E90FF', color: '#fff', borderRadius: '5px', padding: '10px 20px' }}>Volver</button>
+        <button onClick={handleSiguiente} style={{ backgroundColor: '#1E90FF', color: '#fff', borderRadius: '5px', padding: '10px 20px' }}>Siguiente</button>
       </div>
     </div>
   );
